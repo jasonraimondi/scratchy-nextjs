@@ -1,0 +1,7 @@
+query AppVersion {
+  info {
+    name
+    version
+    author
+  }
+}

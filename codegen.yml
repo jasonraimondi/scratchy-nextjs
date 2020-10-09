@@ -1,0 +1,15 @@
+overwrite: true
+schema: github:jasonraimondi/scratchy#master:schema.graphql
+token: ${GH_TOKEN}
+documents: "graphql/**/*.graphql"
+generates:
+  generated/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-graphql-request
+    config:
+#      rawRequest: true
+      scalars:
+        DateTime: Date
+        JSON: "{ [key: string]: any }"
