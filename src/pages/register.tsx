@@ -1,8 +1,7 @@
 import { FormikHelpers } from "formik";
-import { NextPage } from "next";
 import React from "react";
 
-import { withLayout } from "@/app/components/layouts/layout";
+import { Layout } from "@/app/components/layouts/layout";
 import { redirectToLogin } from "@/app/lib/redirect";
 import dynamic from "next/dynamic";
 import { apiSDK } from "@/app/lib/api_sdk";
@@ -18,7 +17,7 @@ type RegisterFormData = {
 
 const RegisterForm = dynamic(() => import("@/app/components/forms/register_form"), { ssr: false });
 
-const Register: NextPage<{}> = () => {
+export default function Register() {
   const handleSubmit = async (
     registerFormData: RegisterFormData,
     { setSubmitting, setStatus }: FormikHelpers<RegisterFormData>
@@ -33,13 +32,9 @@ const Register: NextPage<{}> = () => {
   };
 
   return (
-    <>
+    <Layout title="Register Page">
       <h1>Register Page</h1>
       <RegisterForm handleSubmit={handleSubmit} />
-    </>
+    </Layout>
   );
 };
-
-export default withLayout(Register, {
-  title: "Register Page",
-});

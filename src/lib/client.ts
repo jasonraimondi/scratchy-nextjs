@@ -1,7 +1,4 @@
-import getConfig from "next/config";
 import fetch from "isomorphic-unfetch";
-
-const { publicRuntimeConfig } = getConfig();
 
 const client = async (url: string, { body, ...customConfig }: RequestInit = {}) => {
   // const token = getAccessToken();
@@ -24,7 +21,7 @@ const client = async (url: string, { body, ...customConfig }: RequestInit = {}) 
     config.body = JSON.stringify(body);
   }
   if (!isValidUrl(url)) {
-    url = `${publicRuntimeConfig.API_URL}${url}`;
+    url = `${process.env.API_URL}${url}`;
   }
   const response = await fetch(url, config);
   return await response.json();

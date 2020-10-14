@@ -1,25 +1,17 @@
-import { NextPage } from "next";
+import { useAuth } from "@/app/lib/auth/use_auth";
 import React, { useEffect } from "react";
 
-import { withLayout } from "@/app/components/layouts/layout";
-import { Redirect } from "@/app/lib/redirect";
-import { AuthType } from "@/app/lib/auth/use_auth";
+import { Layout } from "@/app/components/layouts/layout";
 
-type LogoutProps = AuthType & {};
-
-const Logout: NextPage<LogoutProps> = ({ logout }) => {
-  const handleLogout = async () => {
-    await logout();
-    await Redirect("/login");
-  };
+export default function Logout() {
+  const { logout } = useAuth();
 
   useEffect(() => {
-    handleLogout().catch(e => console.error(e));
+    logout();
   }, []);
 
-  return <h1>Logging Out...</h1>;
+  return <Layout title="Logout">
+    <h1>Logging Out...</h1>
+  </Layout>;
 };
 
-export default withLayout(Logout, {
-  title: "Logout Page",
-});

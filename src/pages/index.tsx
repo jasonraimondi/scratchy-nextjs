@@ -1,11 +1,10 @@
+import { Layout } from "@/app/components/layouts/layout";
+import { apiSDK } from "@/app/lib/api_sdk";
+import { useAuth } from "@/app/lib/auth/use_auth";
 import React from "react";
-import { NextPage } from "next";
 import useSWR from "swr";
 
-import { withLayout } from "@/app/components/layouts/layout";
-import { apiSDK } from "@/app/lib/api_sdk";
-
-const userFetcher = () => apiSDK.Users({ query: { limit: 2, order: "DESC" } })
+const userFetcher = () => apiSDK.Users({ query: { limit: 2, order: "DESC" } });
 const useUser = (email: string) => {
   const { data, error } = useSWR(email, userFetcher);
 
@@ -16,36 +15,25 @@ const useUser = (email: string) => {
     list,
     cursor,
     isLoading: !error && !data,
-    isError: error
-  }
-}
-
-const Index: NextPage<any> = () => {
-  const { list, cursor, isLoading, isError } = useUser("jason@raimondi.us");
-  console.log(list, isLoading, isError);
-  if (isError) return <div>failed to load</div>
-  if (isLoading) return <div>loading...</div>
-  return <div>hello {JSON.stringify(cursor)} {JSON.stringify(list)}!</div>
-
-  // let body;
-  // if (!data) {
-  //   body = <p>loading...</p>;
-  // } else {
-  //   body = (
-  //     <>
-  //       <p>users:</p>
-  //       <ul>
-  //         {data.users.map((x: any) => (
-  //           <li key={x.uuid}>{x.email}</li>
-  //         ))}
-  //       </ul>
-  //     </>
-  //   );
-  // }
-  //
-  // return <div>{body}</div>;
+    isError: error,
+  };
 };
 
-export default withLayout(Index, {
-  title: "Hi ya slugger",
-});
+export default function IndexPage() {
+  const { list, cursor, isLoading, isError } = useUser("jason@raimondi.us");
+  const auth = useAuth();
+
+  let body;
+
+  console.log("at", auth.accessToken)
+
+  if (isError) {
+    body = <div>failed to load</div>;
+  } else if (isLoading) {
+    body = <div>loading...</div>;
+  } else {
+    body = <div>hello {JSON.stringify(cursor)} {JSON.stringify(list)}!</div>;
+  }
+
+  return <Layout title="hompeage">{body}</Layout>;
+};

@@ -1,15 +1,8 @@
-import React from "react";
-import App from "next/app";
+import { AuthProvider } from "@/app/lib/auth/use_auth";
+import type { AppProps } from 'next/app'
 
-interface Props {
-}
-
-export default class MyApp extends App<Props> {
-  render() {
-    const { Component, pageProps } = this.props;
-
-    return (
-      <Component {...pageProps} />
-    );
-  }
+export default function MyApp({ Component, pageProps }: AppProps) {
+  return <AuthProvider>
+    <Component {...pageProps} />
+  </AuthProvider>
 }
