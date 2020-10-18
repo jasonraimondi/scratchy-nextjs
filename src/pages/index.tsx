@@ -1,10 +1,11 @@
-import { Layout } from "@/app/components/layouts/layout";
-import { apiSDK } from "@/app/lib/api_sdk";
-import { useAuth } from "@/app/lib/auth/use_auth";
 import React from "react";
 import useSWR from "swr";
 
-const userFetcher = () => apiSDK.Users({ query: { limit: 2, order: "DESC" } });
+import { Layout } from "@/app/components/layouts/layout";
+import { graphQLSdk } from "@/app/lib/api_sdk";
+import { Order } from "@/generated/graphql";
+
+const userFetcher = () => graphQLSdk.Users({ query: { limit: 2, order: Order.Desc } });
 const useUser = (email: string) => {
   const { data, error } = useSWR(email, userFetcher);
 
@@ -21,11 +22,8 @@ const useUser = (email: string) => {
 
 export default function IndexPage() {
   const { list, cursor, isLoading, isError } = useUser("jason@raimondi.us");
-  const auth = useAuth();
 
   let body;
-
-  console.log("at", auth.accessToken)
 
   if (isError) {
     body = <div>failed to load</div>;
@@ -35,5 +33,5 @@ export default function IndexPage() {
     body = <div>hello {JSON.stringify(cursor)} {JSON.stringify(list)}!</div>;
   }
 
-  return <Layout title="hompeage">{body}</Layout>;
+  return <Layout title="Home">{body}</Layout>;
 };

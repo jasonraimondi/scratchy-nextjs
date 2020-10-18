@@ -1,8 +1,8 @@
-import { Layout } from "@/app/components/layouts/layout";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-import { useAuth } from "@/app/lib/auth/use_auth";
+import { Layout } from "@/app/components/layouts/layout";
+import { useAuth } from "@/app/lib/use_auth";
 
 export default function CatchPage() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function CatchPage() {
     });
 
     if (isSuccessful) {
-      await router.replace("/dashboard");
+      await router.replace("/app/dashboard");
     } else {
       await router.replace("/?message=something_went_wrong")
     }

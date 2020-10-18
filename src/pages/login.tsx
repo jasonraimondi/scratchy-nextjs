@@ -1,5 +1,5 @@
 import { Layout } from "@/app/components/layouts/layout";
-import { useAuth } from "@/app/lib/auth/use_auth";
+import { useAuth } from "@/app/lib/use_auth";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
@@ -9,15 +9,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/dashboard?message=access-token-is-still-valid")
+      router.replace("/app/dashboard?message=access-token-is-still-valid")
+    } else {
+      redirectToLogin();
     }
   }, []);
 
-  const handleLoginGoogle = () => alert("implement login with google")
-  const handleLoginEmail = () => redirectToLogin();
-
   return <Layout title="Login">
-    <button onClick={handleLoginGoogle}>Login with Google</button>
-    <button onClick={handleLoginEmail}>Login with Email</button>
+    <p>This is wrong... The login decision needs to exist in the nunjucks template on the oauth2 server</p>
   </Layout>;
 }

@@ -1,19 +1,14 @@
 import fetch from "isomorphic-unfetch";
 
-const client = async (url: string, { body, ...customConfig }: RequestInit = {}) => {
-  // const token = getAccessToken();
-  const headers: HeadersInit = {
-    "content-type": "application/json",
-  };
-  // @TODO add back token header to client
-  // if (token) {
-  //   headers.Authorization = token.authorizationString;
-  // }
+import { getAuthHeaders } from "@/app/lib/utils/auth_headers";
+
+export const httpClient = async (url: string, { body, ...customConfig }: RequestInit = {}) => {
   const config: RequestInit = {
     method: body ? "POST" : "GET",
     ...customConfig,
     headers: {
-      ...headers,
+      "content-type": "application/json",
+      ...getAuthHeaders(),
       ...customConfig.headers,
     },
   };
@@ -35,5 +30,3 @@ const isValidUrl = (url: string) => {
     return false;
   }
 };
-
-export default client;

@@ -1,19 +1,30 @@
+import 'sanitize.css';
+
 import { Header } from "@/app/components/layouts/partials/header";
+import { useAuth } from "@/app/lib/use_auth";
 import { colors } from "@/styles/theme";
 import { css } from "emotion";
 import Head from "next/head";
-import "normalize.css/normalize.css";
-// import { useRouter } from "next/router";
-// import { useEffect } from "react";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 import * as React from "react";
 
 export const Layout: React.FC<{ title?: string; isPrivate?: boolean; }> = ({ children, title = "Scratchy Title", isPrivate = false }) => {
-  // const { isAuthenticated } = useAuth();
-  // const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
 
+  useEffect(() => {
+    console.log({ isPrivate });
+    if (isPrivate && !isAuthenticated) router.push("/register")
+  }, []);
 
-  console.log({ isPrivate });
-  // if (isPrivate && !isAuthenticated && typeof window !== "undefined") router.push("/register")
+  let body;
+
+  if (isPrivate && typeof window === "undefined") {
+    body = <p>JASON Template is loading...</p>
+  } else {
+    body = children;
+  }
 
   return <React.StrictMode>
     <Head>
@@ -42,7 +53,7 @@ export const Layout: React.FC<{ title?: string; isPrivate?: boolean; }> = ({ chi
               background-color: ${colors.blue["300"]};
             `}
       >
-        {children}
+        {body}
       </div>
     </main>
   </React.StrictMode>;

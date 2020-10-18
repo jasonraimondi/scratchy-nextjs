@@ -1,14 +1,12 @@
 import { GraphQLClient } from "graphql-request";
-import getConfig from "next/config";
 
+import { getAuthHeaders } from "@/app/lib/utils/auth_headers";
 import { getSdk } from "@/generated/graphql";
 
-const { publicRuntimeConfig } = getConfig();
-
-const client = new GraphQLClient(`${publicRuntimeConfig.API_URL}/graphql`, {
-  headers: {
-    Authorization: "Bearer foo"
-  }
+const graphQLClient = new GraphQLClient(`${process.env.NEXT_PUBLIC_API_URL}/graphql`, {
+  headers: getAuthHeaders()
 });
 
-export const apiSDK = getSdk(client);
+const graphQLSdk = getSdk(graphQLClient);
+
+export { graphQLClient, graphQLSdk }

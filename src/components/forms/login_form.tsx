@@ -1,7 +1,7 @@
 import React from "react";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { Button, Label } from "@/app/components/forms/elements";
-import { Link } from "@/app/components/link";
+import { Link } from "@/app/components/links/link";
 import { validEmail } from "@/app/pages/register";
 
 export type LoginFormData = {

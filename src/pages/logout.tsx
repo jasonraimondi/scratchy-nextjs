@@ -1,4 +1,4 @@
-import { useAuth } from "@/app/lib/auth/use_auth";
+import { useAuth } from "@/app/lib/use_auth";
 import React, { useEffect } from "react";
 
 import { Layout } from "@/app/components/layouts/layout";

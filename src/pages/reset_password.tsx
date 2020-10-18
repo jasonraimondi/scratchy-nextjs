@@ -1,3 +1,4 @@
+import { useAuth } from "@/app/lib/use_auth";
 import { FormikHelpers } from "formik";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
@@ -5,12 +6,12 @@ import React, { useState } from "react";
 
 import { Layout } from "@/app/components/layouts/layout";
 import { ResetPasswordFormData } from "@/app/components/forms/reset_password_form";
-import { redirectToLogin } from "@/app/lib/redirect";
-import { apiSDK } from "@/app/lib/api_sdk";
+import { graphQLSdk } from "@/app/lib/api_sdk";
 
 const ResetPasswordForm = dynamic(() => import("@/app/components/forms/reset_password_form"), { ssr: false });
 
 export default function ResetPassword() {
+  const { redirectToLogin } = useAuth();
   const router = useRouter();
   const { e, u } = router.query;
   const [email] = useState(Array.isArray(e) ? e[0] : e);
@@ -21,8 +22,8 @@ export default function ResetPassword() {
   }
 
   const handleSubmit = async (data: ResetPasswordFormData, { setSubmitting }: FormikHelpers<ResetPasswordFormData>) => {
-    await apiSDK.ValidateForgotPasswordToken({ token, email });
-    await apiSDK.UpdatePasswordFromToken({ data });
+    await graphQLSdk.ValidateForgotPasswordToken({ token, email });
+    await graphQLSdk.UpdatePasswordFromToken({ data });
     setSubmitting(false);
     await redirectToLogin();
   };

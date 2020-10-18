@@ -1,10 +1,10 @@
+import { useAuth } from "@/app/lib/use_auth";
 import { FormikHelpers } from "formik";
 import React from "react";
 
 import { Layout } from "@/app/components/layouts/layout";
-import { redirectToLogin } from "@/app/lib/redirect";
 import dynamic from "next/dynamic";
-import { apiSDK } from "@/app/lib/api_sdk";
+import { graphQLSdk } from "@/app/lib/api_sdk";
 
 export const validEmail = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
@@ -18,17 +18,19 @@ type RegisterFormData = {
 const RegisterForm = dynamic(() => import("@/app/components/forms/register_form"), { ssr: false });
 
 export default function Register() {
+  const { redirectToLogin } = useAuth();
+
   const handleSubmit = async (
     registerFormData: RegisterFormData,
     { setSubmitting, setStatus }: FormikHelpers<RegisterFormData>
   ) => {
     try {
-      await apiSDK.Register({ data: registerFormData });
+      await graphQLSdk.Register({ data: registerFormData });
     } catch (e) {
       setStatus(e.message);
     }
     setSubmitting(false);
-    await redirectToLogin(undefined, true);
+    await redirectToLogin();
   };
 
   return (
