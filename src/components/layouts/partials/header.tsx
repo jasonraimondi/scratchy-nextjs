@@ -7,7 +7,7 @@ import { colors } from "@/styles/theme";
 import { useAuth } from "@/app/lib/use_auth";
 
 export function Header() {
-  const { accessToken } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   return (
     <header>
@@ -16,11 +16,10 @@ export function Header() {
           display: flex;
         `}
       >
-        <li>{accessToken?.email}</li>
         <Link href="/">
           <NavAnchor>Home</NavAnchor>
         </Link>
-        {accessToken ? (
+        {isAuthenticated() ? (
           <>
             <Link href="/app/dashboard">
               <NavAnchor>Dashboard</NavAnchor>

@@ -3,17 +3,15 @@ import { useAuth } from "@/app/lib/use_auth";
 import React from "react";
 
 export default function Dashboard() {
-  const { accessToken } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   let body;
 
-  if (!accessToken) {
+  if (!isAuthenticated()) {
     body = <p>Invalid Token</p>;
   } else {
     body = <ul>
-      <li>{accessToken.email}</li>
-      <li>{new Date(accessToken.expiresAt * 1000).toISOString()}</li>
-      <li>{accessToken.userId}</li>
+      <li>IS AUTHENTICATED YES</li>
     </ul>;
   }
 

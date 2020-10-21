@@ -1,14 +1,16 @@
-import { parseCookies } from "nookies";
+import Cookies from "js-cookie";
 
 export function getAuthHeaders() {
-  const { access_token } = parseCookies();
-
-  const accessToken: any = access_token ? JSON.parse(access_token) : undefined;
+  const accessToken = Cookies.get("access_token");
 
   const headers: Record<string, string> = {};
 
   if (accessToken) {
-    headers.authorization = "Bearer " + accessToken.token;
+    try {
+      const decodedToken: any =  JSON.parse(accessToken);
+      headers.authorization = "Bearer " + decodedToken.token;
+    } catch (e) {
+    }
   }
 
   return headers;

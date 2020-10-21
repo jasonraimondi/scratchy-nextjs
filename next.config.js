@@ -1,7 +1,6 @@
-const withCSS = require("@zeit/next-css");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 
-module.exports = withCSS({
+module.exports = {
   minify: false,
   distDir: "dist",
   publicRuntimeConfig: {
@@ -11,4 +10,4 @@ module.exports = withCSS({
     config.resolve.plugins = [...(config.resolve.plugins ? config.resolve.plugins : []), new TsconfigPathsPlugin()];
     return config;
   },
-});
+};

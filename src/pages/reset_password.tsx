@@ -11,7 +11,7 @@ import { graphQLSdk } from "@/app/lib/api_sdk";
 const ResetPasswordForm = dynamic(() => import("@/app/components/forms/reset_password_form"), { ssr: false });
 
 export default function ResetPassword() {
-  const { redirectToLogin } = useAuth();
+  const { handleLoginRedirect } = useAuth();
   const router = useRouter();
   const { e, u } = router.query;
   const [email] = useState(Array.isArray(e) ? e[0] : e);
@@ -25,7 +25,7 @@ export default function ResetPassword() {
     await graphQLSdk.ValidateForgotPasswordToken({ token, email });
     await graphQLSdk.UpdatePasswordFromToken({ data });
     setSubmitting(false);
-    await redirectToLogin();
+    await handleLoginRedirect();
   };
 
   return (

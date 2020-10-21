@@ -1,5 +1,5 @@
-import { useAuth } from "@/app/lib/use_auth";
 import { FormikHelpers } from "formik";
+import { useRouter } from "next/router";
 import React from "react";
 
 import { Layout } from "@/app/components/layouts/layout";
@@ -18,7 +18,7 @@ type RegisterFormData = {
 const RegisterForm = dynamic(() => import("@/app/components/forms/register_form"), { ssr: false });
 
 export default function Register() {
-  const { redirectToLogin } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (
     registerFormData: RegisterFormData,
@@ -30,7 +30,7 @@ export default function Register() {
       setStatus(e.message);
     }
     setSubmitting(false);
-    await redirectToLogin();
+    await router.push("/register/success")
   };
 
   return (

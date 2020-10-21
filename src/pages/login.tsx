@@ -1,21 +1,22 @@
-import { Layout } from "@/app/components/layouts/layout";
-import { useAuth } from "@/app/lib/use_auth";
-import { useRouter } from "next/router";
+// import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+import { Layout } from "@/app/components/layouts/layout";
+import { useAuth } from "@/app/lib/use_auth";
+
 export default function LoginPage() {
-  const { isAuthenticated, redirectToLogin } = useAuth();
-  const router = useRouter();
+  const { isAuthenticated, handleLoginRedirect } = useAuth();
+  // const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace("/app/dashboard?message=access-token-is-still-valid")
+    if (isAuthenticated()) {
+      // router.replace("/app/dashboard?message=access-token-is-still-valid")
     } else {
-      redirectToLogin();
+      handleLoginRedirect();
     }
   }, []);
 
   return <Layout title="Login">
-    <p>This is wrong... The login decision needs to exist in the nunjucks template on the oauth2 server</p>
+    <p>Redirecting...</p>
   </Layout>;
 }

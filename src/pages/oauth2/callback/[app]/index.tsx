@@ -6,11 +6,11 @@ import { useAuth } from "@/app/lib/use_auth";
 
 export default function CatchPage() {
   const router = useRouter();
-  const { receiveToken } = useAuth();
+  const { handleCodeTokenExchange } = useAuth();
   const { code, state } = router.query;
 
   const handleToken = async () => {
-    const isSuccessful = await receiveToken(String(code), String(state)).catch(e => {
+    const isSuccessful = await handleCodeTokenExchange(String(code), String(state)).catch(e => {
       console.log(e);
       return false;
     });
@@ -23,7 +23,7 @@ export default function CatchPage() {
   }
 
   useEffect(() => {
-    if (code && state) handleToken().then(console.log)
+    if (code && state) handleToken();
   }, [code, state]);
 
   return <Layout title="Redirecting">

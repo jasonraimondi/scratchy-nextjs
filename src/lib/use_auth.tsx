@@ -1,13 +1,13 @@
 import crypto from "crypto";
 import jwt_decode from "jwt-decode";
 import { useRouter } from "next/router";
-import { destroyCookie, parseCookies, setCookie } from "nookies";
 import querystring from "querystring";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 import { graphQLClient } from "@/app/lib/api_sdk";
-import { base64urlencode } from "@/app/lib/utils/base64";
+import cookieService from "@/app/lib/cookie_service";
 import { httpClient } from "@/app/lib/http_client";
+import { base64urlencode } from "@/app/lib/utils/base64";
 
 type DecodedJWT = {
   sub: string;
@@ -42,33 +42,30 @@ const redirectUri = process.env.NEXT_PUBLIC_API_URL_REDIRECT;
 // @ts-ignore
 const AuthContext = createContext<UseAuth>();
 
-const COOKIE = {
-  codeVerifier: "code_verifier",
-  codeChallenge: "code_challenge",
-  state: "state",
-  accessToken: "access_token",
-  refreshToken: "refresh_token",
-};
+export enum COOKIE {
+  accessToken = "at",
+  refreshToken = "rt",
+  auth = "oa",
+}
 
-const isAccessTokenValid = (accessToken?: DecodedAccessToken) => {
-  return !(Date.now() / 1000 > (accessToken?.expiresAt ?? 0));
-};
+function createOAuthSecurity() {
+  const state = base64urlencode(crypto.randomBytes(5));
+  const codeVerifier = base64urlencode(crypto.randomBytes(40));
+  const codeChallenge = base64urlencode(crypto.createHash("sha256").update(codeVerifier).digest("hex"));
+  return { state, codeVerifier, codeChallenge };
+}
 
 function AuthProvider(props: any) {
   const router = useRouter();
-  const cookies = useMemo(() => parseCookies(), []);
-  const [accessToken, setAccessToken] = useState<DecodedAccessToken | undefined>(cookies.access_token ? JSON.parse(cookies.access_token) : undefined);
-  const [refreshToken, setRefreshToken] = useState<DecodedRefreshToken | undefined>(cookies.refresh_token ? JSON.parse(cookies.refresh_token) : undefined);
-  const isAuthenticated = useMemo(() => isAccessTokenValid(accessToken), [accessToken]);
+  const [accessToken, setAccessToken] = useState<DecodedAccessToken | undefined>(cookieService.get(COOKIE.accessToken));
+  const [, setRefreshToken] = useState<DecodedRefreshToken | undefined>(cookieService.get(COOKIE.refreshToken));
 
   useEffect(() => {
     if (accessToken) graphQLClient.setHeader("Authorization", "Bearer " + accessToken.token);
   }, [accessToken]);
 
-  const redirectToLogin = async (provider: "self" | "google" = "self") => {
-    const state = base64urlencode(crypto.randomBytes(5));
-    const codeVerifier = base64urlencode(crypto.randomBytes(40));
-    const codeChallenge = base64urlencode(crypto.createHash("sha256").update(codeVerifier).digest("hex"));
+  const handleLoginRedirect = async () => {
+    const { state, codeVerifier, codeChallenge } = createOAuthSecurity();
     const redirectQuery = {
       client_id: clientId,
       redirect_uri: redirectUri,
@@ -77,28 +74,30 @@ function AuthProvider(props: any) {
       state,
       code_challenge: codeChallenge,
       code_challenge_method: "S256",
-      provider,
     };
-    setCookie(undefined, COOKIE.codeVerifier, codeVerifier, { path: "/", maxAge: 60 * 10 });
-    setCookie(undefined, COOKIE.state, state, { path: "/", maxAge: 60 * 10 });
+    const oauth = {
+      codeVerifier,
+      state,
+    };
+    cookieService.set(COOKIE.auth, oauth, { path: "/" });
     const redirectTo = process.env.NEXT_PUBLIC_API_URL + "/oauth2/authorize" + "?" + querystring.stringify(redirectQuery);
     await router.push(redirectTo);
   };
 
-  const logout = async () => {
-    destroyCookie(undefined, COOKIE.codeVerifier);
-    destroyCookie(undefined, COOKIE.state);
-    destroyCookie(undefined, COOKIE.accessToken);
-    destroyCookie(undefined, COOKIE.refreshToken);
+  const handleLogout = async () => {
+    cookieService.remove(COOKIE.auth);
+    cookieService.remove(COOKIE.accessToken);
+    cookieService.remove(COOKIE.refreshToken);
     setAccessToken(undefined);
     setRefreshToken(undefined);
     // await client("/logout", { method: "POST" });
     await router.replace("/");
   };
 
-  const receiveToken = async (code: string, incomingState: string): Promise<boolean> => {
-    const codeVerifier = cookies[COOKIE.codeVerifier];
-    const existingState = cookies[COOKIE.state];
+  const handleCodeTokenExchange = async (code: string, incomingState: string): Promise<boolean> => {
+    const oauth: any = cookieService.get(COOKIE.auth);
+    const codeVerifier = oauth?.codeVerifier;
+    const existingState = oauth?.state;
 
     if (!codeVerifier) {
       console.error("NO CODE VERIFIER");
@@ -119,7 +118,7 @@ function AuthProvider(props: any) {
       grant_type: "authorization_code",
     };
 
-    const url = process.env.NEXT_PUBLIC_API_URL + "/oauth2/token"
+    const url = process.env.NEXT_PUBLIC_API_URL + "/oauth2/token";
 
     const response = await httpClient(url, { body });
 
@@ -128,64 +127,59 @@ function AuthProvider(props: any) {
       return false;
     }
 
-    if (response.access_token) setTokenCookie(response.access_token, COOKIE.accessToken as any);
-    if (response.refresh_token) setTokenCookie(response.refresh_token, COOKIE.refreshToken as any);
+    if (response.access_token) setAccessTokenCookie(response.access_token);
+    if (response.refresh_token) setRefreshTokenCookie(response.refresh_token);
 
-    destroyCookie(undefined, COOKIE.codeVerifier);
-    destroyCookie(undefined, COOKIE.state);
+    cookieService.remove(COOKIE.auth);
     return true;
   };
 
-  // type needs to be COOKIE.accessToken || COOKIE.refreshToken
-  const setTokenCookie = (token: string, type: "access_token"|"refresh_token") => {
-    const decodedToken: DecodedJWT | any = jwt_decode(token);
-
-    if (type === COOKIE.accessToken) {
-      const result: DecodedAccessToken = {
-        token,
-        userId: decodedToken.sub,
-        expiresAt: decodedToken.exp,
-        email: decodedToken.email,
-        isActive: decodedToken.isActive,
-      };
-      setAccessToken(result);
-      const expiresAt = new Date(decodedToken.exp * 1000);
-      // const maxAge = (expiresAt.getTime() - Date.now()) / 1000;
-      graphQLClient.setHeader("Authorization", "Bearer " + token)
-      setCookie(undefined, type, JSON.stringify(result), { path: "/", expires: expiresAt });
-    } else {
-      const result: DecodedRefreshToken = {
-        token,
-        userId: decodedToken.user_id,
-        expiresAt: decodedToken.expire_time,
-      };
-      setRefreshToken(result);
-      const expiresAt = new Date(decodedToken.expire_time * 1000);
-      // const maxAge = (expiresAt.getTime() - Date.now()) / 1000;
-      setCookie(undefined, type, JSON.stringify(result), { path: "/", expires: expiresAt });
-    }
-
+  const setAccessTokenCookie = (token: string) => {
+    const decodedJWT: DecodedJWT | any = jwt_decode(token);
+    const accessToken: DecodedAccessToken = {
+      token,
+      userId: decodedJWT.sub,
+      expiresAt: decodedJWT.exp,
+      email: decodedJWT.email,
+      isActive: decodedJWT.isActive,
+    };
+    graphQLClient.setHeader("Authorization", "Bearer " + token);
+    cookieService.set(COOKIE.accessToken, accessToken, {
+      path: "/",
+      expires: new Date(decodedJWT.exp * 1000)
+    });
+    setAccessToken(accessToken);
   };
 
+  const setRefreshTokenCookie = (token: string) => {
+    const decodedJWT: DecodedJWT | any = jwt_decode(token);
+    const refreshToken: DecodedRefreshToken = {
+      token,
+      userId: decodedJWT.user_id,
+      expiresAt: decodedJWT.expire_time,
+    };
+    cookieService.set(COOKIE.refreshToken, refreshToken, {
+      path: "/",
+      expires: new Date(decodedJWT.expire_time * 1000),
+    });
+    setRefreshToken(refreshToken);
+  };
+
+  const isAuthenticated = () => !(Date.now() / 1000 > (accessToken?.expiresAt ?? 0));
+
   return <AuthContext.Provider value={{
-    bearer: accessToken ? "Bearer " + accessToken.token : undefined,
-    accessToken,
-    refreshToken,
     isAuthenticated,
-    logout,
-    receiveToken,
-    redirectToLogin,
+    handleLogout,
+    handleCodeTokenExchange,
+    handleLoginRedirect,
   }} {...props} />;
 }
 
 type UseAuth = {
-  bearer?: string;
-  isAuthenticated: boolean;
-  accessToken?: DecodedAccessToken;
-  refreshToken?: DecodedRefreshToken;
-  logout(): Promise<void>;
-  redirectToLogin(): Promise<void>;
-  receiveToken(code: string, incomingState: string): Promise<boolean>;
+  isAuthenticated(): boolean;
+  handleLogout(): Promise<void>;
+  handleLoginRedirect(): Promise<void>;
+  handleCodeTokenExchange(code: string, incomingState: string): Promise<boolean>;
 }
 
 const useAuth = () => useContext<UseAuth>(AuthContext);

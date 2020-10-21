@@ -4,10 +4,10 @@ import React, { useEffect } from "react";
 import { Layout } from "@/app/components/layouts/layout";
 
 export default function Logout() {
-  const { logout } = useAuth();
+  const { handleLogout } = useAuth();
 
   useEffect(() => {
-    logout();
+    handleLogout();
   }, []);
 
   return <Layout title="Logout">
