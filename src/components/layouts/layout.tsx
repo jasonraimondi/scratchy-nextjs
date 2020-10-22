@@ -1,16 +1,16 @@
 import 'sanitize.css';
 
-import { Header } from "@/app/components/layouts/partials/header";
-import { useAuth } from "@/app/lib/use_auth";
-import { colors } from "@/styles/theme";
 import { css } from "emotion";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
-import * as React from "react";
+import React, { useEffect } from "react";
+
+import { Header } from "@/app/components/layouts/partials/header";
+import { useAuthUser } from "@/app/lib/use_auth_user";
+import { colors } from "@/styles/theme";
 
 export const Layout: React.FC<{ title?: string; isPrivate?: boolean; }> = ({ children, title = "Scratchy Title", isPrivate = false }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthUser();
   const router = useRouter();
 
   useEffect(() => {

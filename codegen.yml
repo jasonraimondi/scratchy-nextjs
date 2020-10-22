@@ -1,5 +1,5 @@
 overwrite: true
-schema: github:jasonraimondi/scratchy#master:schema.graphql
+schema: github:jasonraimondi/scratchy#development:schema.graphql
 token: ${GH_TOKEN}
 documents: "graphql/**/*.graphql"
 generates:

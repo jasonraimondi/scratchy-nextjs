@@ -1,10 +1,10 @@
 import { FormikHelpers } from "formik";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React from "react";
 
 import { Layout } from "@/app/components/layouts/layout";
 import { ForgotPasswordFormData } from "@/app/components/forms/forgot_password_form";
-import dynamic from "next/dynamic";
 import { graphQLSdk } from "@/app/lib/api_sdk";
 
 const ForgotPasswordForm = dynamic(() => import("@/app/components/forms/forgot_password_form"), { ssr: false });

@@ -1,19 +1,13 @@
 import { FormikHelpers } from "formik";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React from "react";
 
+import { RegisterFormData } from "@/app/components/forms/register_form";
 import { Layout } from "@/app/components/layouts/layout";
-import dynamic from "next/dynamic";
 import { graphQLSdk } from "@/app/lib/api_sdk";
 
 export const validEmail = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-
-type RegisterFormData = {
-  email: string;
-  password: string;
-  firstName?: string;
-  lastName?: string;
-};
 
 const RegisterForm = dynamic(() => import("@/app/components/forms/register_form"), { ssr: false });
 

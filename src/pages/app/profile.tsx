@@ -1,22 +1,12 @@
 import React from "react";
-import useSWR from "swr";
 
 import { Layout } from "@/app/components/layouts/layout";
-import { graphQLSdk } from "@/app/lib/api_sdk";
-
-const meFetcher = () => graphQLSdk.Me();
-const useMe = () => {
-  const res = useSWR("me-query", meFetcher);
-  const { data, error } = res;
-  return {
-    data,
-    isLoading: !error && !data,
-    isError: error,
-  };
-};
+import { useApiMe } from "@/app/lib/api/me";
 
 export default function Profile() {
-  const { data, isLoading, isError } = useMe();
+  const { data, isLoading, isError } = useApiMe();
+
+  console.log({data, isLoading, isError })
 
   let body;
 

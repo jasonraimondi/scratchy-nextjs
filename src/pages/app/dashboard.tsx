@@ -1,9 +1,9 @@
 import { Layout } from "@/app/components/layouts/layout";
-import { useAuth } from "@/app/lib/use_auth";
+import { useAuthUser } from "@/app/lib/use_auth_user";
 import React from "react";
 
 export default function Dashboard() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuthUser();
 
   let body;
 
@@ -12,6 +12,7 @@ export default function Dashboard() {
   } else {
     body = <ul>
       <li>IS AUTHENTICATED YES</li>
+      <li>{JSON.stringify(user)}</li>
     </ul>;
   }
 

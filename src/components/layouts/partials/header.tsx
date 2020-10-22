@@ -1,13 +1,13 @@
+import { useAuthUser } from "@/app/lib/use_auth_user";
 import React from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/core";
 
 import { Link } from "@/app/components/links/link";
 import { colors } from "@/styles/theme";
-import { useAuth } from "@/app/lib/use_auth";
 
 export function Header() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthUser();
 
   return (
     <header>

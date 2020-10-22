@@ -1,36 +1,30 @@
+import { useUser } from "@/app/lib/api/user";
+import { apiUsersFetcher } from "@/app/lib/api/users";
 import React from "react";
-import useSWR from "swr";
 
 import { Layout } from "@/app/components/layouts/layout";
-import { graphQLSdk } from "@/app/lib/api_sdk";
-import { Order } from "@/generated/graphql";
 
-const userFetcher = () => graphQLSdk.Users({ query: { limit: 2, order: Order.Desc } });
-const useUser = (email: string) => {
-  const { data, error } = useSWR(email, userFetcher);
+export async function getStaticProps() {
+  const users = await apiUsersFetcher()
+  return { props: { users: users } }
+}
 
-  const list = data?.users.data;
-  const cursor = data?.users.cursor;
-
-  return {
-    list,
-    cursor,
-    isLoading: !error && !data,
-    isError: error,
-  };
-};
-
-export default function IndexPage() {
-  const { list, cursor, isLoading, isError } = useUser("jason@raimondi.us");
+export default function IndexPage({ users }: any) {
+  const { data, error, isValidating } = useUser("jason@raimondi.us", { initialData: users });
 
   let body;
 
-  if (isError) {
+  if (error) {
     body = <div>failed to load</div>;
-  } else if (isLoading) {
+  } else if (isValidating) {
     body = <div>loading...</div>;
   } else {
-    body = <div>hello {JSON.stringify(cursor)} {JSON.stringify(list)}!</div>;
+    const users = data.users.data.map((user: any) => <div>
+      <p>{user.name} - {user.email}</p>
+    </div>);
+    body = <div>
+      <div>{users}</div>
+    </div>;
   }
 
   return <Layout title="Home">{body}</Layout>;

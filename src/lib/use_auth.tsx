@@ -1,13 +1,13 @@
+import { graphQLClient } from "@/app/lib/api_sdk";
+import { COOKIE } from "@/app/lib/cookie_constants";
+import cookieService from "@/app/lib/cookie_service";
+import { httpClient } from "@/app/lib/http_client";
+import { base64urlencode } from "@/app/lib/utils/base64";
 import crypto from "crypto";
 import jwt_decode from "jwt-decode";
 import { useRouter } from "next/router";
 import querystring from "querystring";
 import { createContext, useContext, useEffect, useState } from "react";
-
-import { graphQLClient } from "@/app/lib/api_sdk";
-import cookieService from "@/app/lib/cookie_service";
-import { httpClient } from "@/app/lib/http_client";
-import { base64urlencode } from "@/app/lib/utils/base64";
 
 type DecodedJWT = {
   sub: string;
@@ -22,7 +22,7 @@ type DecodedJWT = {
   isActive: boolean;
 }
 
-type DecodedAccessToken = {
+export type DecodedAccessToken = {
   token: string;
   expiresAt: number;
   userId: string;
@@ -42,12 +42,6 @@ const redirectUri = process.env.NEXT_PUBLIC_API_URL_REDIRECT;
 // @ts-ignore
 const AuthContext = createContext<UseAuth>();
 
-export enum COOKIE {
-  accessToken = "at",
-  refreshToken = "rt",
-  auth = "oa",
-}
-
 function createOAuthSecurity() {
   const state = base64urlencode(crypto.randomBytes(5));
   const codeVerifier = base64urlencode(crypto.randomBytes(40));
@@ -58,7 +52,7 @@ function createOAuthSecurity() {
 function AuthProvider(props: any) {
   const router = useRouter();
   const [accessToken, setAccessToken] = useState<DecodedAccessToken | undefined>(cookieService.get(COOKIE.accessToken));
-  const [, setRefreshToken] = useState<DecodedRefreshToken | undefined>(cookieService.get(COOKIE.refreshToken));
+  const [refreshToken, setRefreshToken] = useState<DecodedRefreshToken | undefined>(cookieService.get(COOKIE.refreshToken));
 
   useEffect(() => {
     if (accessToken) graphQLClient.setHeader("Authorization", "Bearer " + accessToken.token);
@@ -165,10 +159,9 @@ function AuthProvider(props: any) {
     setRefreshToken(refreshToken);
   };
 
-  const isAuthenticated = () => !(Date.now() / 1000 > (accessToken?.expiresAt ?? 0));
-
   return <AuthContext.Provider value={{
-    isAuthenticated,
+    accessToken,
+    refreshToken,
     handleLogout,
     handleCodeTokenExchange,
     handleLoginRedirect,
@@ -176,7 +169,8 @@ function AuthProvider(props: any) {
 }
 
 type UseAuth = {
-  isAuthenticated(): boolean;
+  accessToken?: DecodedAccessToken;
+  refreshToken?: DecodedRefreshToken;
   handleLogout(): Promise<void>;
   handleLoginRedirect(): Promise<void>;
   handleCodeTokenExchange(code: string, incomingState: string): Promise<boolean>;
