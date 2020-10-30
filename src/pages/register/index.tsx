@@ -12,7 +12,7 @@ export const validEmail = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 const RegisterForm = dynamic(() => import("@/app/components/forms/register_form"), { ssr: false });
 
 export default function Register() {
-  const router = useRouter();
+  // const router = useRouter();
 
   const handleSubmit = async (
     registerFormData: RegisterFormData,
@@ -24,7 +24,7 @@ export default function Register() {
       setStatus(e.message);
     }
     setSubmitting(false);
-    await router.push("/register/success")
+    // await router.push("/register/success")
   };
 
   return (

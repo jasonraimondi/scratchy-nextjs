@@ -1,5 +1,3 @@
-import fetch from "isomorphic-unfetch";
-
 import { getAuthHeaders } from "@/app/lib/utils/auth_headers";
 
 export const httpClient = async (url: string, { body, ...customConfig }: RequestInit = {}) => {
